@@ -1,5 +1,6 @@
 require("dotenv").config({ path: ".env" });
 const { Client, IntentsBitField } = require("discord.js");
+const eventHandlers = require("./handlers/eventHandlers");
 
 const client = new Client({
   // declare intents for authorized events
@@ -11,15 +12,6 @@ const client = new Client({
   ],
 });
 
-client.on("ready", (c) => {
-  console.log(`> bot ${c.user.tag} is online`);
-});
-
-client.on("messageCreate", (message) => {
-  if (message.author.bot) return;
-  if (message.content === "hello") {
-    message.reply("hello");
-  }
-});
+eventHandlers(client);
 
 client.login(process.env.TOKEN);
