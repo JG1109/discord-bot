@@ -77,7 +77,7 @@ module.exports = {
       );
       await targetUserInteraction.reply({
         content: `You picked ${targetUserChoice.name + targetUserChoice.emoji}`,
-        // ephemeral: true
+        ephemeral: true
       });
 
       // collect player 1 button clicks
