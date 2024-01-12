@@ -1,5 +1,6 @@
 require("dotenv").config({ path: ".env" });
 const { Client, IntentsBitField } = require("discord.js");
+const mongoose = require("mongoose");
 const eventHandlers = require("./handlers/eventHandlers");
 
 const client = new Client({
@@ -11,6 +12,16 @@ const client = new Client({
     IntentsBitField.Flags.MessageContent,
   ],
 });
+
+(async () => {
+  try {
+    mongoose.set("strictQuery", false);
+    await mongoose.connect(process.env.MONGODB_CONNECTION_STR);
+    console.log("> connected to db");
+  } catch (error) {
+    console.log("error with db");
+  }
+})();
 
 eventHandlers(client);
 
