@@ -15,10 +15,6 @@ module.exports = {
    * @param {ChatInputCommandInteraction} param0.interaction
    */
   callback: async (client, interaction) => {
-    const embed = new EmbedBuilder()
-      .setTitle("Summoner Info")
-      .setTimestamp(new Date());
-
     const nametag = interaction.options.getString("nametag").split("#");
     const account_api_str =
       "https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/" +
@@ -51,10 +47,51 @@ module.exports = {
         console.log("Error with /opgg");
         console.log(error);
       });
+
+    const profile_icon_uri =
+      "https://ddragon.leagueoflegends.com/cdn/14.1.1/img/profileicon/" +
+      summoner_data.profileIconId +
+      ".png";
+
+    const embed = new EmbedBuilder()
+      .setColor("#5383E8")
+      .setAuthor({
+        name: "OP.GG",
+        iconURL: "https://asset.brandfetch.io/idrLeSINfM/idzqWoCdeq.png",
+        url: "https://www.op.gg/summoners/na/" + nametag[0] + "-" + nametag[1],
+      })
+      .setTitle(`${nametag[0]}`)
+      .setThumbnail(profile_icon_uri)
+      .setDescription(`#${nametag[1]}`)
+      .addFields(
+        {
+          name: "Level",
+          value: `${summoner_data.summonerLevel}`,
+          inline: true,
+        },
+        { name: "Name", value: `${summoner_data.name}`, inline: true }
+      )
+      .setTimestamp()
+      .setFooter({
+        text: "Powered by Riot API",
+        iconURL: "https://img.icons8.com/color/48/riot-games.png",
+        url: "https://developer.riotgames.com/",
+      });
+
+    const button_0 = new ButtonBuilder()
+      .setCustomId("Summary")
+      .setLabel("Summary")
+      .setStyle(ButtonStyle.Primary);
+    const button_1 = new ButtonBuilder()
+      .setCustomId("Match History")
+      .setLabel("Match History")
+      .setStyle(ButtonStyle.Primary);
+    const row = new ActionRowBuilder().addComponents([button_0, button_1]);
+
     await interaction.reply({
-      content: `${nametag[0]}#${nametag[1]}: Lv. ${summoner_data.summonerLevel}`,
+      content: "",
       embeds: [embed],
-      components: [],
+      components: [row],
     });
   },
   data: {
