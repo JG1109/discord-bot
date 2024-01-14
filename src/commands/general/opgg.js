@@ -27,9 +27,11 @@ module.exports = {
     let summoner_data;
     let spectator_api_str = "";
     let spectator_data;
+    let puuid;
     await axios
       .get(account_api_str)
       .then((response) => {
+        puuid = response.data.puuid;
         summoner_api_str =
           "https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/" +
           response.data.puuid +
@@ -109,11 +111,66 @@ module.exports = {
       .setStyle(ButtonStyle.Primary);
     const row = new ActionRowBuilder().addComponents([button_0, button_1]);
 
-    await interaction.reply({
+    const reply = await interaction.reply({
       content: "",
       embeds: [embed],
       components: [row],
     });
+
+    // record button selection
+    const initialUserInteraction = await reply.awaitMessageComponent();
+    if (!initialUserInteraction) return;
+    if (initialUserInteraction.customId === "Match History") {
+      const matches_api_str =
+        "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" +
+        puuid +
+        "/ids?api_key=" +
+        process.env.RIOT_KEY;
+
+      let match_api_strs = [];
+
+      await axios
+        .get(matches_api_str)
+        .then((response) => {
+          for (const ind in response.data) {
+            const match_id = response.data[ind];
+            const match_api_str =
+              "https://americas.api.riotgames.com/lol/match/v5/matches/" +
+              match_id +
+              "?api_key=" +
+              process.env.RIOT_KEY;
+            match_api_strs.push(match_api_str);
+          }
+        })
+        .catch((error) => {
+          console.log("Error with /opgg (matches info)");
+          console.log(error);
+        });
+
+      const matchPerformances = {};
+
+      for (let ind = 0; ind < match_api_strs.length; ind++) {
+        await axios
+          .get(match_api_strs[ind])
+          .then((response) => {
+            for (
+              let pos = 0;
+              pos < response.data.metadata.participants.length;
+              pos++
+            ) {
+              if (response.data.metadata.participants[pos] === puuid) {
+                matchPerformances[ind] = response.data.info.participants[pos];
+              }
+            }
+          })
+          .catch((error) => {
+            console.log("Error with /opgg (single match lookup)");
+            console.log(error);
+          });
+      }
+
+      console.log(Object.keys(matchPerformances).length);
+    }
   },
   data: {
     name: "opgg",
