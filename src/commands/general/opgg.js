@@ -25,6 +25,8 @@ module.exports = {
       process.env.RIOT_KEY;
     let summoner_api_str = "";
     let summoner_data;
+    let spectator_api_str = "";
+    let spectator_data;
     await axios
       .get(account_api_str)
       .then((response) => {
@@ -35,16 +37,30 @@ module.exports = {
           process.env.RIOT_KEY;
       })
       .catch((error) => {
-        console.log("Error with /opgg");
+        console.log("Error with /opgg (looking up player puuid)");
         console.log(error);
       });
     await axios
       .get(summoner_api_str)
       .then((response) => {
         summoner_data = response.data;
+        spectator_api_str =
+          "https://na1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" +
+          response.data.id +
+          "?api_key=" +
+          process.env.RIOT_KEY;
       })
       .catch((error) => {
-        console.log("Error with /opgg");
+        console.log("Error with /opgg (looking up summoner data)");
+        console.log(error);
+      });
+    await axios
+      .get(spectator_api_str)
+      .then((response) => {
+        spectator_data = response.status;
+      })
+      .catch((error) => {
+        console.log("Error with /opgg (looking up player status)");
         console.log(error);
       });
 
@@ -69,7 +85,12 @@ module.exports = {
           value: `${summoner_data.summonerLevel}`,
           inline: true,
         },
-        { name: "Name", value: `${summoner_data.name}`, inline: true }
+        { name: "Name", value: `${summoner_data.name}`, inline: true },
+        {
+          name: "Status",
+          value: `${spectator_data === undefined ? "N/A" : "In Game"}`,
+          inline: true,
+        }
       )
       .setTimestamp()
       .setFooter({
