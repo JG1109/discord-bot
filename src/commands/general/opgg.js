@@ -5,6 +5,7 @@ const {
   ButtonBuilder,
   ActionRowBuilder,
   ButtonStyle,
+  ButtonInteraction,
 } = require("discord.js");
 require("dotenv").config({ path: ".env" });
 const axios = require("axios");
@@ -117,10 +118,16 @@ module.exports = {
       components: [row],
     });
 
-    // record button selection
-    const initialUserInteraction = await reply.awaitMessageComponent();
+    // provide match history data
+    const collectorFilter = async (i) => {
+      await wait(10_000);
+    };
+
+    const initialUserInteraction = await reply.awaitMessageComponent({
+      filter: collectorFilter,
+    });
     if (!initialUserInteraction) return;
-    if (initialUserInteraction.customId === "Match History") {
+    if (initialUserInteraction.customId === "Summary") {
       const matches_api_str =
         "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" +
         puuid +
@@ -169,7 +176,33 @@ module.exports = {
           });
       }
 
-      console.log(Object.keys(matchPerformances).length);
+      let totalKills = 0;
+      let totalDeaths = 0;
+      let totalAssists = 0;
+      for (const ind in matchPerformances) {
+        totalKills += matchPerformances[ind].kills;
+        totalDeaths += matchPerformances[ind].deaths;
+        totalAssists += matchPerformances[ind].assists;
+      }
+
+      embed
+        .setTitle(`Player Summary`)
+        .setDescription(`${nametag[0]}#${nametag[1]}`)
+        .setFields(
+          {
+            name: "KDA",
+            value: `${(totalKills + totalAssists) / totalDeaths}`,
+          },
+          {
+            name: "DPM",
+            value: `1`,
+            inline: true,
+          },
+          { name: "Gold/Min", value: `1` },
+          { name: "Skillshots Dodged", value: `1` }
+        );
+
+      await reply.edit({ embeds: [embed], components: [] });
     }
   },
   data: {
