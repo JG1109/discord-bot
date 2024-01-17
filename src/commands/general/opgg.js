@@ -119,13 +119,7 @@ module.exports = {
     });
 
     // provide match history data
-    const collectorFilter = async (i) => {
-      await wait(10_000);
-    };
-
-    const initialUserInteraction = await reply.awaitMessageComponent({
-      filter: collectorFilter,
-    });
+    const initialUserInteraction = await reply.awaitMessageComponent({});
     if (!initialUserInteraction) return;
     if (initialUserInteraction.customId === "Summary") {
       const matches_api_str =
@@ -179,27 +173,45 @@ module.exports = {
       let totalKills = 0;
       let totalDeaths = 0;
       let totalAssists = 0;
+      let gameLength = 0;
+      let damage = 0;
+      let gold = 0;
+      let skillshots_dodged = 0;
       for (const ind in matchPerformances) {
         totalKills += matchPerformances[ind].kills;
         totalDeaths += matchPerformances[ind].deaths;
         totalAssists += matchPerformances[ind].assists;
+        skillshots_dodged += matchPerformances[ind].challenges.skillshotsDodged;
+        damage +=
+          matchPerformances[ind].challenges.damagePerMinute *
+          (matchPerformances[ind].challenges.gameLength / 60);
+        gold +=
+          matchPerformances[ind].challenges.goldPerMinute *
+          (matchPerformances[ind].challenges.gameLength / 60);
+        gameLength += matchPerformances[ind].challenges.gameLength / 60;
       }
 
       embed
-        .setTitle(`Player Summary`)
+        .setTitle(`Recent 20 Games`)
         .setDescription(`${nametag[0]}#${nametag[1]}`)
         .setFields(
           {
             name: "KDA",
-            value: `${(totalKills + totalAssists) / totalDeaths}`,
+            value: `${
+              Math.round(((totalKills + totalAssists) / totalDeaths) * 100) /
+              100
+            }`,
           },
           {
             name: "DPM",
-            value: `1`,
+            value: `${Math.round((damage / gameLength) * 100) / 100}`,
             inline: true,
           },
-          { name: "Gold/Min", value: `1` },
-          { name: "Skillshots Dodged", value: `1` }
+          {
+            name: "Gold/Min",
+            value: `${Math.round((gold / gameLength) * 100) / 100}`,
+          },
+          { name: "Skillshots Dodged", value: `${skillshots_dodged}` }
         );
 
       await reply.edit({ embeds: [embed], components: [] });
