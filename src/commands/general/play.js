@@ -1,4 +1,9 @@
 const Spotify = require("spotify-api.js");
+const { Client } = require("spotify-api.js");
+const { getVoiceConnection, joinVoiceChannel } = require("@discordjs/voice");
+
+const { DisTube } = require("distube");
+const { SpotifyPlugin } = require("@distube/spotify");
 
 module.exports = {
   /**
@@ -7,99 +12,96 @@ module.exports = {
    */
   callback: async (client, interaction) => {
     // Connect to Spotify API
-    const spotify_client = new Spotify.Client({
-      token: process.env.SPOTIFY_TOKEN,
+    const spotify_client = await Client.create({
+      refreshToken: true,
+      token: {
+        clientID: process.env.SPOTIFY_CLIENT_ID,
+        clientSecret: process.env.SPOTIFY_TOKEN,
+      },
+      // This event is emitted whenever the token is refreshed by either 429 requests or [Client.refresh] method.
+      onRefresh() {
+        console.log(`Token has been refreshed. New token: ${client.token}!`);
+      },
     });
+
+    // Get the link from the command
+    const link = interaction.options.getString("link");
+
+    // Get the type of the link
+    const type = link.split("/")[3];
+
+    // Check if the link is valid
+    if (!link.includes("open.spotify.com")) {
+      return interaction.reply({
+        content: "Please provide a valid Spotify link.",
+        ephemeral: true,
+      });
+    }
 
     // Check if user is in a voice channel
-    // If not, send an error message
-    const voiceChannel = interaction.member.voice.channel;
-    if (!voiceChannel) {
-      await interaction.reply({
-        content: "You must be in a voice channel to play music.",
+    if (!interaction.member.voice.channel) {
+      return interaction.reply({
+        content: "Please join a voice channel.",
         ephemeral: true,
       });
-      return;
     }
 
-    // Check if the link provided is a valid Spotify link
-    // If not, send an error message
-    const spotify_link = interaction.options.getString("link");
-    if (!spotify_link.includes("spotify")) {
-      await interaction.reply({
-        content: "Invalid Spotify link.",
-        ephemeral: true,
+    // Get the voice channel
+    const voice_channel = interaction.member.voice.channel;
+
+    // Get the voice connection
+    const voice_connection = getVoiceConnection(voice_channel.guild.id);
+
+    // Check if the bot is in a voice channel
+    /* if (!voice_connection) {
+      const connection = joinVoiceChannel({
+        channelId: voice_channel.id,
+        guildId: voice_channel.guild.id,
+        adapterCreator: voice_channel.guild.voiceAdapterCreator,
       });
-      return;
+      /* console.log(connection);
+    } */
+
+    // Get the id of the link
+    const id = link.split("/")[4];
+
+    // Create a new DisTube instance
+    const distube = new DisTube(client, {
+      searchSongs: 10,
+      emitNewSongOnly: true,
+      plugins: [new SpotifyPlugin()],
+    });
+
+    // Play the track, playlist or album
+    let src;
+    switch (type) {
+      case "track":
+        src = await spotify_client.tracks.get(id);
+        distube.play(voice_channel, `https://open.spotify.com/track/${src.id}`);
+        break;
+      case "playlist":
+        src = await spotify_client.playlists.get(id);
+        src.tracks.items.forEach((track) => {
+          distube.play(
+            voice_channel,
+            `https://open.spotify.com/track/${track.track.id}`
+          );
+        });
+        break;
+      case "album":
+        src = await spotify_client.albums.get(id);
+        src.tracks.items.forEach((track) => {
+          distube.play(
+            voice_channel,
+            `https://open.spotify.com/track/${track.id}`
+          );
+        });
+        break;
     }
 
-    // Get the Spotify link type
-    // If the link is a track, play the track
-    // If the link is a playlist, play the playlist
-    // If the link is an album, play the album
-    const spotify_link_type = spotify_link.split("/")[3];
-    if (spotify_link_type === "track") {
-      const track = await spotify_client.tracks.get(spotify_link.split("/")[4]);
-      console.log(1);
-      await interaction.reply({
-        content: `Now playing **${track.name}** by **${track.artists[0].name}**`,
-        ephemeral: true,
-      });
-      await client.distube.playVoiceChannel(voiceChannel, track.url);
-    } else if (spotify_link_type === "playlist") {
-      const playlist = await spotify_client.playlists.get(
-        spotify_link.split("/")[4]
-      );
-      await interaction.reply({
-        content: `Now playing **${playlist.name}** by **${playlist.owner.display_name}**`,
-        ephemeral: true,
-      });
-      await client.distube.playVoiceChannel(
-        voiceChannel,
-        playlist.tracks[0].url
-      );
-    } else if (spotify_link_type === "album") {
-      const album = await spotify_client.albums.get(spotify_link.split("/")[4]);
-      await interaction.reply({
-        content: `Now playing **${album.name}** by **${album.artists[0].name}**`,
-        ephemeral: true,
-      });
-      await client.distube.playVoiceChannel(voiceChannel, album.tracks[0].url);
-    }
-
-    // Add the song to the queue
-    // If the queue is empty, play the song
-    // If the queue is not empty, send a message
-    client.distube.on("addSong", (queue, song) => {
-      if (queue.songs.length === 1) return;
-      interaction.followUp({
-        content: `Added **${song.name}** to the queue.`,
-        ephemeral: true,
-      });
-    });
-
-    // Send a message when the song ends
-    client.distube.on("finish", (queue) => {
-      interaction.followUp({
-        content: `Finished playing **${queue.songs[0].name}**.`,
-        ephemeral: true,
-      });
-    });
-
-    // Send a message when the queue ends
-    client.distube.on("empty", (queue) => {
-      interaction.followUp({
-        content: `Queue ended.`,
-        ephemeral: true,
-      });
-    });
-
-    // Send a message when an error occurs
-    client.distube.on("error", (queue, error) => {
-      interaction.followUp({
-        content: `An error occurred.`,
-        ephemeral: true,
-      });
+    // Send a message to the user
+    await interaction.reply({
+      content: `Now playing: ${src.name} by ${src.artists[0].name}`,
     });
   },
   data: {
