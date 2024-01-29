@@ -23,7 +23,7 @@ module.exports = {
       .setFooter({
         text: "Built by Ricky",
         iconURL: "https://img.icons8.com/avantgarde/100/discord-logo.png",
-        url: " https://meet-ricky.netlify.app/",
+        url: "https://meet-ricky.netlify.app/",
       });
 
     await interaction.reply({

@@ -102,41 +102,17 @@ module.exports = {
     }
 
     // Send an embed to the user
-    // Include artist, album, track name, album cover, duration
+    // Set author
     const embed = new EmbedBuilder()
-      .setColor("#929AAB")
-      .setTitle("Now playing")
-      .setDescription(`[${src.name}](${link})`)
-      .addFields(
-        {
-          name: "Link",
-          value: `[Spotify](${link})`,
-          inline: true,
-        },
-        {
-          name: "Artist",
-          value: `${src.artists[0].name}`,
-          inline: true,
-        },
-        {
-          name: "Album",
-          value: `${src.album.name}`,
-          inline: true,
-        },
-        {
-          name: "Duration",
-          value: `${Math.floor(src.duration_ms / 60000)}:${Math.floor(
-            (src.duration_ms % 60000) / 1000
-          )}`,
-          inline: true,
-        }
+      .setDescription(
+        `Started playing [${src.name} by ${src.artists[0].name}](${link})`
       )
-      .setThumbnail(`${src.album.images[0].url}`)
+      .setColor("#929AAB")
       .setFooter({
         text: "Src from YouTube",
         iconURL:
           "https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/395_Youtube_logo-512.png",
-        url: " https://meet-ricky.netlify.app/",
+        url: "",
       });
 
     await interaction.reply({
