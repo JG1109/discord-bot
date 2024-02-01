@@ -18,7 +18,7 @@
         - [ ] show a status bar
         - [ ] set a time limit and update the embed accordingly
 
-- [ ] XP system
+- [ ] level system
     - [x] give xp via messaging
     - [x] give xp via stayng in voice channel
         - [x] update voice state

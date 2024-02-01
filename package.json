@@ -16,6 +16,8 @@
     "@distube/spotify": "^1.5.2",
     "@distube/ytsr": "^2.0.0",
     "axios": "^1.6.5",
+    "canvacord": "^6.0.1",
+    "canvas": "^2.11.2",
     "discord.js": "^14.14.1",
     "discord.js-poll-embed": "^1.0.2",
     "distube": "^4.1.1",
