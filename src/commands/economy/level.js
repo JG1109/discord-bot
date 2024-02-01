@@ -3,12 +3,15 @@ const {
   Interaction,
   ApplicationCommandOptionType,
   AttachmentBuilder,
+  MessageAttachment,
 } = require("discord.js");
 const calculateLevelXP = require("../../utils/calculateLevelXP");
 const Level = require("../../schemas/level");
 
 const { Font, RankCardBuilder, BuiltInGraphemeProvider } = require("canvacord");
 const { writeFileSync } = require("fs");
+
+Font.loadDefault();
 
 module.exports = {
   /**
@@ -19,8 +22,8 @@ module.exports = {
   callback: async (client, interaction) => {
     await interaction.deferReply();
 
-    const mentionedUserId = interaction.options.getMentionable("user")?.value;
-    const targetUserId = mentionedUserId || interaction.user.id;
+    const mentionedUser = interaction.options.getUser("user");
+    const targetUserId = mentionedUser ? mentionedUser.id : interaction.user.id;
     const targetUserObject = await interaction.guild.members.fetch(
       targetUserId
     );
@@ -30,10 +33,11 @@ module.exports = {
       userId: targetUserId,
     });
 
+    // make sure to mention the target user
     if (!fetchedLevel) {
       interaction.editReply(
-        mentionedUserId
-          ? `${targetUserObject.user.tag} has no level.`
+        targetUserId
+          ? `<@${targetUserObject.id}> has no level.`
           : "You have no level."
       );
       return;
@@ -55,10 +59,10 @@ module.exports = {
     const targetUserRank =
       allLevels.findIndex((level) => level.userId === targetUserId) + 1;
 
-    Font.loadDefault();
-
     const card = new RankCardBuilder()
-      .setAvatar(targetUserObject.user.displayAvatarURL({ format: "png" }))
+      .setAvatar(
+        targetUserObject.user.displayAvatarURL({ format: "png", size: 1024 })
+      )
       .setCurrentXP(fetchedLevel.xp)
       .setRequiredXP(calculateLevelXP(fetchedLevel.level))
       .setLevel(fetchedLevel.level)
@@ -68,10 +72,10 @@ module.exports = {
       .setStatus(targetUserObject.presence.status)
       .setGraphemeProvider(BuiltInGraphemeProvider.FluentEmojiFlat);
 
-    const image = await card.build({ format: "png"});
-    /* const attachment = new AttachmentBuilder(image, "rank.png");
-    interaction.editReply({ files: [attachment] }); */
-    interaction.editReply({ files: [image] });
+    const image = await card.build({ format: "png", width: 1024, height: 256 });
+    const attachment = new AttachmentBuilder(image, "rank.png");
+    interaction.editReply({ files: [attachment] });
+    /* writeFileSync("./rank.png", image); */
   },
   data: {
     name: "level",
@@ -80,7 +84,7 @@ module.exports = {
       {
         name: "user",
         description: "The user whose level you want to see.",
-        type: ApplicationCommandOptionType.Mentionable,
+        type: ApplicationCommandOptionType.User,
       },
     ],
   },
