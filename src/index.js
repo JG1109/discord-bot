@@ -19,11 +19,11 @@ const client = new Client({
     mongoose.set("strictQuery", false);
     await mongoose.connect(process.env.MONGODB_CONNECTION_STR);
     console.log("> connected to db");
+
+    eventHandlers(client);
+
+    client.login(process.env.TOKEN);
   } catch (error) {
     console.log("error with db");
   }
 })();
-
-eventHandlers(client);
-
-client.login(process.env.TOKEN);
