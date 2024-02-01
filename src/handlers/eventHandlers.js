@@ -10,11 +10,21 @@ module.exports = (client) => {
 
     const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
 
-    client.on(eventName, async (arg) => {
-      for (const eventFile of eventFiles) {
-        const eventFunction = require(eventFile);
-        await eventFunction(client, arg);
-      }
-    });
+    if (eventName === "voiceStateUpdate") {
+      client.on(eventName, async (arg1, arg2) => {
+        for (const eventFile of eventFiles) {
+          const eventFunction = require(eventFile);
+          await eventFunction(client, arg1, arg2);
+        }
+      });
+      continue;
+    } else {
+      client.on(eventName, async (arg) => {
+        for (const eventFile of eventFiles) {
+          const eventFunction = require(eventFile);
+          await eventFunction(client, arg);
+        }
+      });
+    }
   }
 };
