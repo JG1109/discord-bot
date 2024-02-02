@@ -70,7 +70,13 @@ module.exports = {
       .setUsername(targetUserObject.user.username)
       .setDisplayName(targetUserObject.displayName)
       .setStatus(targetUserObject.presence.status)
-      .setGraphemeProvider(BuiltInGraphemeProvider.FluentEmojiFlat);
+      .setGraphemeProvider(BuiltInGraphemeProvider.FluentEmojiFlat)
+      // set background
+      .setBackground(
+        "https://w0.peakpx.com/wallpaper/607/74/HD-wallpaper-monochrome-city-house-scenic-hakurei-reimu-black-and-white-home-run-city-anime-touhou-anime-girl-scenery-female-town-black-ibuki-suika-monochrome-building-girl-running-reimu-ibuki.jpg"
+      )
+      // set overlay color to black
+      .setOverlay("#171717");
 
     const image = await card.build({ format: "png", width: 1024, height: 256 });
     const attachment = new AttachmentBuilder(image, "rank.png");
