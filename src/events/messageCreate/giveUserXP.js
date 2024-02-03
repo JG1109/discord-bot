@@ -29,7 +29,7 @@ module.exports = async (client, message) => {
   if (!message.guild || message.author.bot) return;
 
   /* const xpToGive = getRandomXP(5, 15); */
-  const xpToGive = 4000;
+  const xpToGive = 50;
 
   const query = {
     guildId: message.guild.id,
