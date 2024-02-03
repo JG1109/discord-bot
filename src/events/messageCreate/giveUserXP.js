@@ -90,7 +90,7 @@ module.exports = async (client, message) => {
 
         // load image from the file system
         const background = await Canvas.loadImage(
-          "https://i.postimg.cc/T1TkV2tL/Level-Up-Card.png"
+          "https://i.postimg.cc/gj1D1Hgf/level-Up-Card-Background.png"
         );
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 

@@ -72,9 +72,7 @@ module.exports = {
       .setStatus(targetUserObject.presence.status)
       .setGraphemeProvider(BuiltInGraphemeProvider.FluentEmojiFlat)
       // set background
-      .setBackground(
-        "https://w0.peakpx.com/wallpaper/607/74/HD-wallpaper-monochrome-city-house-scenic-hakurei-reimu-black-and-white-home-run-city-anime-touhou-anime-girl-scenery-female-town-black-ibuki-suika-monochrome-building-girl-running-reimu-ibuki.jpg"
-      )
+      .setBackground("https://i.postimg.cc/KYrD96XV/rank-card-bkgrd.png")
       // set overlay color to black
       .setOverlay("#171717");
 

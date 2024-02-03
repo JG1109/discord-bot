@@ -18,10 +18,10 @@
         - [ ] show a status bar
         - [ ] set a time limit and update the embed accordingly
 
-- [ ] /level
+- [x] /level
     - [x] check users level
     - [x] send rank card
-    - [ ] visual (make the card look better)
+    - [x] visual (make the card look better)
 
 - [ ] level system
     - [x] give xp via messaging
@@ -29,5 +29,6 @@
         - [x] update voice state
         - [x] keep giving xp when users stay
         - [x] send congrats message to a specific text channel
+        - [ ] fix bug when more than one users are in the voice channel
     - [x] notify users when leveling up with card
-    - [ ] visual (make the card look better)
+    - [x] visual (make the card look better)
