@@ -207,7 +207,7 @@ module.exports = async (client, oldState, newState) => {
           clearInterval(interval);
           return;
         }
-      }, 3_000); // 5 minutes
+      }, 300_000); // 5 minutes
     } catch (error) {
       console.log(`Error giving xp: ${error}`);
     }
